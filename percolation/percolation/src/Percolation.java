@@ -1,4 +1,5 @@
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
+import edu.princeton.cs.algs4.StdRandom;
 
 public class Percolation {
     // creates n-by-n grid, with all sites initially block, with value 0
@@ -19,13 +20,17 @@ public class Percolation {
     public int index(int row, int col) {
         return (row - 1) * n + col - 1;
     }
+    public int getRowFromIndex(int i) {
+        return i / n + 1;
+    }
+    public int getColFromIndex(int i) {
+        return i % n + 1;
+    }
     // opens the site (row, col) if it is not open already, site with value 0 is blocked, 1 means open
     public void open(int row, int col){
-        if (row < 1 || row > n || col < 1 || col > n) {
-            throw new IllegalArgumentException();
-        }
-        if (grid[row][col] == 0) {
-            grid[row][col] = 1;
+        throwIllegalArgumentException(row, col);
+        if (isFull(row, col)) {
+            grid[row - 1][col - 1] = 1;
             connect(row, col);
             num_open++;
         }
@@ -58,20 +63,20 @@ public class Percolation {
     }
     // is the site (row, col) open?
     public boolean isOpen(int row, int col){
-        if (row < 1 || row > n || col < 1 || col > n) {
-            throw new IllegalArgumentException();
-        }
+        throwIllegalArgumentException(row, col);
         return grid[row - 1][col - 1] == 1;
     }
 
     // is the site (row, col) full?
     public boolean isFull(int row, int col){
+        throwIllegalArgumentException(row, col);
+        return grid[row - 1][col - 1] == 0;
+    }
+    public void throwIllegalArgumentException(int row, int col) {
         if (row < 1 || row > n || col < 1 || col > n) {
             throw new IllegalArgumentException();
         }
-        return grid[row - 1][col - 1] == 0;
     }
-
     // returns the number of open sites
     public int numberOfOpenSites(){
         return num_open;
@@ -81,9 +86,13 @@ public class Percolation {
     public boolean percolates(){
         return uf.connected(index_of_top, index_of_bot);
     }
-
-    // test client (optional)
-    public static void main(String[] args){
-
+    // perform one trial
+    public double SinglePercolation() {
+        while (!percolates()) {
+            int index = StdRandom.uniform(0, n*n);
+            open(getRowFromIndex(index), getColFromIndex(index));
+        }
+        return (double) num_open / (n*n);
     }
+
 }
