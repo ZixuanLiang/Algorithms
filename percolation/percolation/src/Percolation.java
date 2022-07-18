@@ -17,13 +17,13 @@ public class Percolation {
         index_of_top = n*n;
         index_of_bot = index_of_top + 1;
     }
-    public int index(int row, int col) {
+    private int index(int row, int col) {
         return (row - 1) * n + col - 1;
     }
-    public int getRowFromIndex(int i) {
+    private int getRowFromIndex(int i) {
         return i / n + 1;
     }
-    public int getColFromIndex(int i) {
+    private int getColFromIndex(int i) {
         return i % n + 1;
     }
     // opens the site (row, col) if it is not open already, site with value 0 is blocked, 1 means open
@@ -36,7 +36,7 @@ public class Percolation {
         }
     }
     //connect the site with its possible neighbors
-    public void connect(int row, int col){
+    private void connect(int row, int col){
         int i = index(row, col);
         if (row == 1) {
             uf.union(i, index_of_top);
@@ -56,7 +56,7 @@ public class Percolation {
         }
     }
     //connect a site with a specific site
-    public void connect_to(int i, int row, int col) {
+    private void connect_to(int i, int row, int col) {
         if (isOpen(row, col)) {
             uf.union(i, index(row, col));
         }
@@ -72,19 +72,19 @@ public class Percolation {
         throwIllegalArgumentException(row, col);
         return grid[row - 1][col - 1] == 0;
     }
-    public void throwIllegalArgumentException(int row, int col) {
+    private void throwIllegalArgumentException(int row, int col) {
         if (row < 1 || row > n || col < 1 || col > n) {
             throw new IllegalArgumentException();
         }
     }
     // returns the number of open sites
-    public int numberOfOpenSites(){
+    private int numberOfOpenSites(){
         return num_open;
     }
 
     // does the system percolate?
     public boolean percolates(){
-        return uf.connected(index_of_top, index_of_bot);
+        return uf.find(index_of_top) == uf.find(index_of_bot);
     }
     // perform one trial
     public double SinglePercolation() {

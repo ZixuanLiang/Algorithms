@@ -3,7 +3,7 @@ import edu.princeton.cs.algs4.StdStats;
 import java.util.Arrays;
 
 public class PercolationStats {
-    double[] threshold;
+    private double[] threshold;
 
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
