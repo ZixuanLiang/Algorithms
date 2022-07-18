@@ -1,3 +1,4 @@
+import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.StdStats;
 
 import java.util.Arrays;
@@ -10,10 +11,19 @@ public class PercolationStats {
         threshold = new double[trials];
         for (int i = 0; i < trials; i++) {
             Percolation p = new Percolation(n);
-            threshold[i] = p.SinglePercolation();
+            while (!p.percolates()) {
+                int index = StdRandom.uniform(0, n*n);
+                p.open(getRowFromIndex(index, n), getColFromIndex(index, n));
+            }
+            threshold[i] = (double) p.numberOfOpenSites() / (n*n);
         }
     }
-
+    private int getRowFromIndex(int i, int n) {
+        return i / n + 1;
+    }
+    private int getColFromIndex(int i, int n) {
+        return i % n + 1;
+    }
     // sample mean of percolation threshold
     public double mean() {
         return StdStats.mean(threshold);

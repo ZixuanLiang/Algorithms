@@ -1,5 +1,4 @@
 import edu.princeton.cs.algs4.WeightedQuickUnionUF;
-import edu.princeton.cs.algs4.StdRandom;
 
 public class Percolation {
     // creates n-by-n grid, with all sites initially block, with value 0
@@ -20,12 +19,8 @@ public class Percolation {
     private int index(int row, int col) {
         return (row - 1) * n + col - 1;
     }
-    private int getRowFromIndex(int i) {
-        return i / n + 1;
-    }
-    private int getColFromIndex(int i) {
-        return i % n + 1;
-    }
+
+
     // opens the site (row, col) if it is not open already, site with value 0 is blocked, 1 means open
     public void open(int row, int col){
         throwIllegalArgumentException(row, col);
@@ -78,21 +73,13 @@ public class Percolation {
         }
     }
     // returns the number of open sites
-    private int numberOfOpenSites(){
+    public int numberOfOpenSites(){
         return num_open;
     }
 
     // does the system percolate?
     public boolean percolates(){
         return uf.find(index_of_top) == uf.find(index_of_bot);
-    }
-    // perform one trial
-    public double SinglePercolation() {
-        while (!percolates()) {
-            int index = StdRandom.uniform(0, n*n);
-            open(getRowFromIndex(index), getColFromIndex(index));
-        }
-        return (double) num_open / (n*n);
     }
 
 }
