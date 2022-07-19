@@ -3,17 +3,17 @@ import edu.princeton.cs.algs4.WeightedQuickUnionUF;
 public class Percolation {
     // creates n-by-n grid, with all sites initially block, with value 0
     private int[][] grid;
-    private int n;
+    private final int n;
     private int num_open;
-    private WeightedQuickUnionUF uf;
+    private final WeightedQuickUnionUF uf;
     private int index_of_top;
     private int index_of_bot;
 
-    public Percolation(int n){
+    public Percolation(int n) {
         grid = new int[n][n];
         this.n = n;
-        uf = new WeightedQuickUnionUF(n*n + 2);
-        index_of_top = n*n;
+        uf = new WeightedQuickUnionUF(n * n + 2);
+        index_of_top = n * n;
         index_of_bot = index_of_top + 1;
     }
     private int index(int row, int col) {
@@ -22,7 +22,7 @@ public class Percolation {
 
 
     // opens the site (row, col) if it is not open already, site with value 0 is blocked, 1 means open
-    public void open(int row, int col){
+    public void open(int row, int col) {
         throwIllegalArgumentException(row, col);
         if (isFull(row, col)) {
             grid[row - 1][col - 1] = 1;

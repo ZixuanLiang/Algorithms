@@ -1,11 +1,10 @@
 import edu.princeton.cs.algs4.StdRandom;
 import edu.princeton.cs.algs4.StdStats;
 
-import java.util.Arrays;
 
 public class PercolationStats {
     private double[] threshold;
-
+    private static final double ci95 = 1.96;
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
         threshold = new double[trials];
@@ -37,14 +36,14 @@ public class PercolationStats {
     // low endpoint of 95% confidence interval
     public double confidenceLo() {
         double mean = mean();
-        double d = 1.96 * stddev() / Math.sqrt(threshold.length);
+        double d = ci95 * stddev() / Math.sqrt(threshold.length);
         return mean - d;
     }
 
     // high endpoint of 95% confidence interval
     public double confidenceHi() {
         double mean = mean();
-        double d = 1.96 * stddev() / Math.sqrt(threshold.length);
+        double d = ci95 * stddev() / Math.sqrt(threshold.length);
         return mean + d;
     }
 
@@ -56,6 +55,6 @@ public class PercolationStats {
         double[] CI = new double[]{stats.confidenceLo(), stats.confidenceHi()};
         System.out.println("mean                    = " + stats.mean());
         System.out.println("stddev                  = " + stats.stddev());
-        System.out.println("95% confidence interval = " + Arrays.toString(CI));
+        System.out.println("95% confidence interval = " + "[" + CI[0] + "," + CI[1] + "]" );
     }
 }
