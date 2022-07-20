@@ -98,9 +98,24 @@ public class Point implements Comparable<Point> {
      */
     public Comparator<Point> slopeOrder() {
         /* YOUR CODE HERE */
+        return new PointComparator(this);
     }
 
-
+    public static class PointComparator implements Comparator<Point> {
+        private Point p;
+        public PointComparator(Point p) {
+            this.p = p;
+        }
+        public int compare(Point a, Point b) {
+            if (p.slopeTo(a) < p.slopeTo(b)) {
+                return -1;
+            } else if (p.slopeTo(a) == p.slopeTo(b)) {
+                return 0;
+            } else {
+                return 1;
+            }
+        }
+    }
     /**
      * Returns a string representation of this point.
      * This method is provide for debugging;
