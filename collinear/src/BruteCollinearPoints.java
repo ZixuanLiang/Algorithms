@@ -35,7 +35,7 @@ public class BruteCollinearPoints {
         }
     }     // finds all line segments containing 4 points
 
-    public static void ArgumentCheck(Point[] points) {
+    private static void ArgumentCheck(Point[] points) {
         if (points == null) {
             throw new IllegalArgumentException();
         } else {
@@ -46,7 +46,7 @@ public class BruteCollinearPoints {
             }
         }
         Merge.sort(points);
-        for (int i = 0; i < points.length; i++) {
+        for (int i = 0; i < points.length - 1; i++) {
             if (points[i].compareTo(points[i + 1]) == 0) {
                 throw new IllegalArgumentException();
             }
@@ -56,7 +56,7 @@ public class BruteCollinearPoints {
         return segments.size();
     }         // the number of line segments
     public LineSegment[] segments() {
-        return (LineSegment[]) segments.toArray();
+        return segments.toArray(new LineSegment[0]);
     }                // the line segments
 
     public static void main(String[] args) {

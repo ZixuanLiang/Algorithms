@@ -26,7 +26,7 @@ public class Point implements Comparable<Point> {
         StdDraw.point(x, y);
     }
 
- ,    /**
+     /**
      * Draws the line segment between this point and the specified point
      * to standard draw.
      *
@@ -57,7 +57,7 @@ public class Point implements Comparable<Point> {
         } else if (this.x == that.x) {
             return Double.POSITIVE_INFINITY;
         } else {
-            return (that.y - this.y) / (that.x - this.x);
+            return (double) (that.y - this.y) / (that.x - this.x);
         }
     }
 
@@ -101,7 +101,7 @@ public class Point implements Comparable<Point> {
         return new PointComparator(this);
     }
 
-    public static class PointComparator implements Comparator<Point> {
+    private static class PointComparator implements Comparator<Point> {
         private Point p;
         public PointComparator(Point p) {
             this.p = p;

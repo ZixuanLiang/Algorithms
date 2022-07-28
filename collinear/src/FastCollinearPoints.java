@@ -1,14 +1,17 @@
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.Merge;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Comparator;
 
 public class FastCollinearPoints {
     private List<LineSegment> segments;
 
     public FastCollinearPoints(Point[] points) {
-        BruteCollinearPoints.ArgumentCheck(points);
+        ArgumentCheck(points);
         int len = points.length;
         for (int i = 0; i < len; i++) {
             Point p = points[i];
@@ -35,7 +38,7 @@ public class FastCollinearPoints {
     }        // the number of line segments
 
     public LineSegment[] segments() {
-        return (LineSegment[]) segments.toArray();
+        return segments.toArray(new LineSegment[0]);
     }                // the line segments
 
     public static void main(String[] args) {
@@ -67,5 +70,21 @@ public class FastCollinearPoints {
         }
         StdDraw.show();
     }
-
+    private static void ArgumentCheck(Point[] points) {
+        if (points == null) {
+            throw new IllegalArgumentException();
+        } else {
+            for (Point p : points) {
+                if (p == null) {
+                    throw new IllegalArgumentException();
+                }
+            }
+        }
+        Merge.sort(points);
+        for (int i = 0; i < points.length - 1; i++) {
+            if (points[i].compareTo(points[i + 1]) == 0) {
+                throw new IllegalArgumentException();
+            }
+        }
+    }
 }

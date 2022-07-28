@@ -3,8 +3,8 @@ import edu.princeton.cs.algs4.StdStats;
 
 
 public class PercolationStats {
-    private double[] threshold;
-    private static final double ci95 = 1.96;
+    private static final double CI_95 = 1.96;
+    private final double[] threshold;
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
         threshold = new double[trials];
@@ -36,14 +36,14 @@ public class PercolationStats {
     // low endpoint of 95% confidence interval
     public double confidenceLo() {
         double mean = mean();
-        double d = ci95 * stddev() / Math.sqrt(threshold.length);
+        double d = CI_95 * stddev() / Math.sqrt(threshold.length);
         return mean - d;
     }
 
     // high endpoint of 95% confidence interval
     public double confidenceHi() {
         double mean = mean();
-        double d = ci95 * stddev() / Math.sqrt(threshold.length);
+        double d = CI_95 * stddev() / Math.sqrt(threshold.length);
         return mean + d;
     }
 
@@ -55,6 +55,6 @@ public class PercolationStats {
         double[] CI = new double[]{stats.confidenceLo(), stats.confidenceHi()};
         System.out.println("mean                    = " + stats.mean());
         System.out.println("stddev                  = " + stats.stddev());
-        System.out.println("95% confidence interval = " + "[" + CI[0] + "," + CI[1] + "]" );
+        System.out.println("95% confidence interval = " + "[" + CI[0] + "," + CI[1] + "]");
     }
 }
