@@ -14,72 +14,55 @@ public class FastCollinearPoints {
 
     public FastCollinearPoints(Point[] points) {
         Point[] pointsArray = ArgumentCheck(points);
-        List<Double> slopeArray = new ArrayList<>();
-        List<Point> pArray = new ArrayList<>();;
+        List<Point> list = Arrays.asList(pointsArray);
+        LinkedList<Point> auxPointsArray = new LinkedList<>(list);
         segments = new ArrayList<>();
         int len = pointsArray.length;
         int i = 0;
-        while (i < len - 3){
-            Point p = pointsArray[i];
+        while (auxPointsArray.size() != 0 && i < len - 3){
+            Point p = auxPointsArray.remove(0);
+            Arrays.sort(pointsArray, i, len);
+            int index = Arrays.binarySearch(pointsArray, p);
+            Point temp = pointsArray[i];
+            pointsArray[i] = pointsArray[index];
+            pointsArray[index] = temp;
+
             Comparator<Point> comparator = p.slopeOrder();
             Arrays.sort(pointsArray, i + 1, len);
             Arrays.sort(pointsArray, i + 1, len, comparator);
+
             int counts = 1;
             double originalSlope = pointsArray[i + 1].slopeTo(p);
+
             for (int j = i + 2; j < len; j++) {
                 double slope = pointsArray[j].slopeTo(p);
-                if (slope != originalSlope) {
+                if (slope == originalSlope) {
+                    counts++;
+                    if (j == len - 1 & counts >= 3) {
+                        for (int k = counts; k > 0; k--) {
+                            auxPointsArray.remove(pointsArray[j - k + 1]);
+                        }
+                        Point low = getLowPoint(p, pointsArray[j - counts + 1]);
+                        Point high = getHighPoint(p, pointsArray[j]);
+                        segments.add(new LineSegment(low, high));
+                    }
+                } else {
                     if (counts >= 3) {
+                        for (int k = counts; k > 0; k--) {
+                            auxPointsArray.remove(pointsArray[j - k]);
+                        }
                         Point low = getLowPoint(p, pointsArray[j - counts]);
                         Point high = getHighPoint(p, pointsArray[j - 1]);
-                        boolean addOrNot = true;
-                        for (int k = 0; k < slopeArray.size(); k++) {
-                            if (slopeArray.get(k) == originalSlope) {
-                                if (sameLine(pArray.get(k), slopeArray.get(k), low)) {
-                                    addOrNot = false;
-                                    break;
-                                }
-                            }
-                        }
-                        if (addOrNot) {
-                            segments.add(new LineSegment(low, high));
-                            slopeArray.add(originalSlope);
-                            pArray.add(low);
-                        }
+                        segments.add(new LineSegment(low, high));
                     }
                     counts = 1;
                     originalSlope = slope;
-                } else {
-                    counts++;
-                    if (j == len - 1 && counts >= 3){
-                        Point low = getLowPoint(p, pointsArray[j - counts + 1]);
-                        Point high = getHighPoint(p, pointsArray[j]);
-                        boolean addOrNot = true;
-                        for (int k = 0; k < slopeArray.size(); k++) {
-                            if (slopeArray.get(k) == originalSlope) {
-                                if (sameLine(pArray.get(k), slopeArray.get(k), low)) {
-                                    addOrNot = false;
-                                    break;
-                                }
-                            }
-                        }
-                        if (addOrNot) {
-                            segments.add(new LineSegment(low, high));
-                            slopeArray.add(originalSlope);
-                            pArray.add(low);
-                        }
-                    }
                 }
             }
             i++;
         }
-    }
+    }     // finds all line segments containing 4 or more points
 
-        // finds all line segments containing 4 or more points
-
-    private boolean sameLine(Point o, Double slope,Point p){
-        return p.slopeTo(o) == slope;
-    }
     private Point getLowPoint(Point p, Point q) {
         if (p.compareTo(q) > 0) {
             return q;
