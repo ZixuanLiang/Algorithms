@@ -1,12 +1,12 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Merge;
 import edu.princeton.cs.algs4.StdDraw;
+
 import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.Comparator;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class FastCollinearPoints {
@@ -14,54 +14,40 @@ public class FastCollinearPoints {
 
     public FastCollinearPoints(Point[] points) {
         Point[] pointsArray = ArgumentCheck(points);
-        List<Point> list = Arrays.asList(pointsArray);
-        LinkedList<Point> auxPointsArray = new LinkedList<>(list);
         segments = new ArrayList<>();
         int len = pointsArray.length;
-        int i = 0;
-        while (auxPointsArray.size() != 0 && i < len - 3){
-            Point p = auxPointsArray.remove(0);
-            Arrays.sort(pointsArray, i, len);
-            int index = Arrays.binarySearch(pointsArray, p);
-            Point temp = pointsArray[i];
-            pointsArray[i] = pointsArray[index];
-            pointsArray[index] = temp;
-
+        Point[] auxArray;
+        for (Point p : pointsArray) {
+            auxArray = Arrays.copyOf(pointsArray, len);
+            Arrays.sort(auxArray);
             Comparator<Point> comparator = p.slopeOrder();
-            Arrays.sort(pointsArray, i + 1, len);
-            Arrays.sort(pointsArray, i + 1, len, comparator);
-
+            Arrays.sort(auxArray, comparator);
             int counts = 1;
-            double originalSlope = pointsArray[i + 1].slopeTo(p);
-
-            for (int j = i + 2; j < len; j++) {
-                double slope = pointsArray[j].slopeTo(p);
-                if (slope == originalSlope) {
+            double slopeOfLast = auxArray[0].slopeTo(p);
+            for (int j = 1; j < len; j++) {
+                double slope = auxArray[j].slopeTo(p);
+                if (slope == slopeOfLast) {
                     counts++;
-                    if (j == len - 1 & counts >= 3) {
-                        for (int k = counts; k > 0; k--) {
-                            auxPointsArray.remove(pointsArray[j - k + 1]);
+                    if (counts > 2 && j == len - 1) {
+                        Point low = getLowPoint(p, auxArray[j - counts + 1]);
+                        if (low == p) {
+                            segments.add(new LineSegment(p, auxArray[j]));
                         }
-                        Point low = getLowPoint(p, pointsArray[j - counts + 1]);
-                        Point high = getHighPoint(p, pointsArray[j]);
-                        segments.add(new LineSegment(low, high));
                     }
                 } else {
-                    if (counts >= 3) {
-                        for (int k = counts; k > 0; k--) {
-                            auxPointsArray.remove(pointsArray[j - k]);
+                    if (counts > 2) {
+                        Point low = getLowPoint(p, auxArray[j - counts]);
+                        if (low == p) {
+                            segments.add(new LineSegment(p, auxArray[j - 1]));
                         }
-                        Point low = getLowPoint(p, pointsArray[j - counts]);
-                        Point high = getHighPoint(p, pointsArray[j - 1]);
-                        segments.add(new LineSegment(low, high));
                     }
                     counts = 1;
-                    originalSlope = slope;
+                    slopeOfLast = slope;
                 }
             }
-            i++;
         }
-    }     // finds all line segments containing 4 or more points
+    }
+         // finds all line segments containing 4 or more points
 
     private Point getLowPoint(Point p, Point q) {
         if (p.compareTo(q) > 0) {
@@ -71,13 +57,6 @@ public class FastCollinearPoints {
         }
     }
 
-    private Point getHighPoint(Point p, Point q) {
-        if (p.compareTo(q) > 0) {
-            return p;
-        } else {
-            return q;
-        }
-    }
 
     public int numberOfSegments() {
         return segments.size();
