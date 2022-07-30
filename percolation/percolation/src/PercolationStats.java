@@ -7,6 +7,9 @@ public class PercolationStats {
     private final double[] threshold;
     // perform independent trials on an n-by-n grid
     public PercolationStats(int n, int trials) {
+        if (trials <= 0 || n <= 0) {
+            throw new IllegalArgumentException();
+        }
         threshold = new double[trials];
         for (int i = 0; i < trials; i++) {
             Percolation p = new Percolation(n);
