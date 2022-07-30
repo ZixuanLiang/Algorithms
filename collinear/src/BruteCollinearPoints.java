@@ -11,17 +11,17 @@ public class BruteCollinearPoints {
     private List<LineSegment> segments;
 
     public BruteCollinearPoints(Point[] points) {
-        ArgumentCheck(points);
+        Point[] pointsArray = ArgumentCheck(points);
         segments = new ArrayList<>();
-        int len = points.length;
+        int len = pointsArray.length;
         for (int i = 0; i < len - 3; i++) {
-            for (int j = i + 1; j < len - 2; i++) {
+            for (int j = i + 1; j < len - 2; j++) {
                 for (int k = j + 1; k < len - 1; k++) {
                     for (int l = k + 1; l < len; l++) {
-                        Point p = points[i];
-                        Point q = points[j];
-                        Point r = points[k];
-                        Point s = points[l];
+                        Point p = pointsArray[i];
+                        Point q = pointsArray[j];
+                        Point r = pointsArray[k];
+                        Point s = pointsArray[l];
                         Comparator<Point> comparator = p.slopeOrder();
                         if (comparator.compare(q, r) == 0) {
                             if (comparator.compare(q, s)== 0) {
@@ -35,7 +35,7 @@ public class BruteCollinearPoints {
         }
     }     // finds all line segments containing 4 points
 
-    private static void ArgumentCheck(Point[] points) {
+    private static Point[] ArgumentCheck(Point[] points) {
         if (points == null) {
             throw new IllegalArgumentException();
         } else {
@@ -45,12 +45,15 @@ public class BruteCollinearPoints {
                 }
             }
         }
-        Merge.sort(points);
-        for (int i = 0; i < points.length - 1; i++) {
-            if (points[i].compareTo(points[i + 1]) == 0) {
+        Point[] pointArray = new Point[points.length];
+        System.arraycopy(points, 0, pointArray, 0, points.length);
+        Merge.sort(pointArray);
+        for (int i = 0; i < pointArray.length - 1; i++) {
+            if (pointArray[i].compareTo(pointArray[i + 1]) == 0) {
                 throw new IllegalArgumentException();
             }
         }
+        return pointArray;
     }
     public           int numberOfSegments() {
         return segments.size();

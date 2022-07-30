@@ -1,39 +1,77 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Merge;
 import edu.princeton.cs.algs4.StdDraw;
+import java.util.Arrays;
+import java.util.LinkedList;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 public class FastCollinearPoints {
     private List<LineSegment> segments;
 
     public FastCollinearPoints(Point[] points) {
-        ArgumentCheck(points);
-        int len = points.length;
-        for (int i = 0; i < len; i++) {
-            Point p = points[i];
+        Point[] pointsArray = ArgumentCheck(points);
+        List<Point> list = Arrays.asList(pointsArray);
+        LinkedList<Point> auxPointsArray = new LinkedList<>(list);
+        segments = new ArrayList<>();
+        int len = pointsArray.length;
+        int i = 0;
+        while (auxPointsArray.size() != 0 && i < len - 3){
+            Point p = auxPointsArray.remove(0);
+            Arrays.sort(pointsArray, i, len);
+            int index = Arrays.binarySearch(pointsArray, p);
+            Point temp = pointsArray[i];
+            pointsArray[i] = pointsArray[index];
+            pointsArray[index] = temp;
+
             Comparator<Point> comparator = p.slopeOrder();
-            Arrays.sort(points, i + 1, len - 1, comparator);
+            Arrays.sort(pointsArray, i + 1, len);
+            Arrays.sort(pointsArray, i + 1, len, comparator);
+
             int counts = 1;
-            double originalSlope = points[i + 1].slopeTo(p);
+            double originalSlope = pointsArray[i + 1].slopeTo(p);
+
             for (int j = i + 2; j < len; j++) {
-                double slope = points[j].slopeTo(p);
+                double slope = pointsArray[j].slopeTo(p);
                 if (slope == originalSlope) {
                     counts++;
                 } else {
                     if (counts >= 3) {
-                        segments.add(new LineSegment(p, points[j - 1]));
+                        for (int k = counts; k > 3; k--) {
+                            auxPointsArray.remove(pointsArray[j - k]);
+                        }
+                        Point low = getLowPoint(p, pointsArray[j - counts]);
+                        Point high = getHighPoint(p, pointsArray[j - 1]);
+                        segments.add(new LineSegment(low, high));
                     }
                     counts = 1;
                     originalSlope = slope;
                 }
             }
+            i++;
         }
     }     // finds all line segments containing 4 or more points
-    public           int numberOfSegments() {
+
+    private Point getLowPoint(Point p, Point q) {
+        if (p.compareTo(q) > 0) {
+            return q;
+        } else {
+            return p;
+        }
+    }
+
+    private Point getHighPoint(Point p, Point q) {
+        if (p.compareTo(q) > 0) {
+            return p;
+        } else {
+            return q;
+        }
+    }
+
+    public int numberOfSegments() {
         return segments.size();
     }        // the number of line segments
 
@@ -70,7 +108,8 @@ public class FastCollinearPoints {
         }
         StdDraw.show();
     }
-    private static void ArgumentCheck(Point[] points) {
+
+    private static Point[] ArgumentCheck(Point[] points) {
         if (points == null) {
             throw new IllegalArgumentException();
         } else {
@@ -80,11 +119,14 @@ public class FastCollinearPoints {
                 }
             }
         }
-        Merge.sort(points);
-        for (int i = 0; i < points.length - 1; i++) {
-            if (points[i].compareTo(points[i + 1]) == 0) {
+        Point[] pointArray = new Point[points.length];
+        System.arraycopy(points, 0, pointArray, 0, points.length);
+        Merge.sort(pointArray);
+        for (int i = 0; i < pointArray.length - 1; i++) {
+            if (pointArray[i].compareTo(pointArray[i + 1]) == 0) {
                 throw new IllegalArgumentException();
             }
         }
+        return pointArray;
     }
 }
