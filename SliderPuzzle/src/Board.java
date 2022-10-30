@@ -1,13 +1,17 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdIn;
+import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdRandom;
 public class Board {
     private final int n;
     private final int[] board;
     private int indexOfEmpty;
+
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
+
     public Board(int[][] tiles){
         this.n = tiles.length;
         board = new int[n*n];
@@ -19,16 +23,18 @@ public class Board {
                 }
             }
         }
+
     }
     private Board(Board another){
         this.n = another.n;
         this.board = another.board;
         this.indexOfEmpty = another.indexOfEmpty;
     }
-    // change (row, col) to the index in board
+    // change (row, col) to the index in the board array
     private int toIndex(int row, int col){
          return (row - 1) * n + col - 1;
     }
+    // get which row (row counts from 1, not 0)
     private int getRow(int index){
         return (index / n) + 1;
     }
@@ -117,15 +123,19 @@ public class Board {
     public Iterable<Board> neighbors(){
         List<Board> boardList = new ArrayList<>();
         List<Integer> indexArray = new ArrayList<>();
+        // meaning the empty cell is not at the last row, and it can move down
         if (getRow(indexOfEmpty) < n) {
-            indexArray.add(indexOfEmpty + n);// press up
+            indexArray.add(indexOfEmpty + n);
         }
+        // the empty cell is not at the first row, it can move up
         if (getRow(indexOfEmpty) > 1) {
-            indexArray.add(indexOfEmpty - n);// press down
+            indexArray.add(indexOfEmpty - n);
         }
+        // it can move right
         if (getCol(indexOfEmpty) < n) {
-            indexArray.add(indexOfEmpty + 1); // press left
+            indexArray.add(indexOfEmpty + 1);
         }
+        // it can move left
         if (getCol(indexOfEmpty) > 1) {
             indexArray.add(indexOfEmpty - 1);
         }
@@ -136,15 +146,29 @@ public class Board {
         }
         return boardList;
     }
-
+    // exchange the board[i] with board[indexOfEmpty]
     private void exchange(int indexA, int indexB){
         int tmp = board[indexA];
         board[indexA] = board[indexB];
         board[indexB] = tmp;
+
     }
+
+
     // a board that is obtained by exchanging any pair of tiles
     public Board twin(){
-
+        Board newBoard = new Board(this);
+        newBoard.exchange(this.randomIntGenerator(), this.randomIntGenerator());
+        return newBoard;
+    }
+    // generate an integer that is not equal to indexOfEmpty
+    private int randomIntGenerator(){
+        Random rand = new Random();
+        int randInt = rand.nextInt();
+        while (randInt == this.indexOfEmpty) {
+            randInt = rand.nextInt(this.n);
+        }
+        return randInt;
     }
 
     // unit testing (not graded)
