@@ -1,7 +1,8 @@
+import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
+import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class Solver {
@@ -16,62 +17,62 @@ public class Solver {
             this.parent = parent;
             this.priority = priority;
         }
+        @Override
         public int compareTo(Node another){
             return this.priority - another.priority;
         }
     }
     // find a solution to the initial board (using the A* algorithm)
-    private boolean ifSolved = false;
+    private int whichOneIsSolvable = 0; // 0 means unknown, 1 means the original is solvable,
+    // -1 means the twin is solvable
     private Node finalNode = null;
     public Solver(Board initial) {
+        // A is the original, B is the twin which is used to know if the A is solvable
         MinPQ<Node> queueA = new MinPQ<Node>();
         MinPQ<Node> queueB = new MinPQ<Node>();
-        Node nodeA = new Node(initial, 0, initial.manhattan(), null);
-        Node nodeB = new Node(initial.twin(), 0, initial.manhattan(), null);
+        Node nodeA = new Node(initial, 0, initial.hamming(), null);
+        Node nodeB = new Node(initial.twin(), 0, initial.hamming(), null);
         queueA.insert(nodeA);
         queueB.insert(nodeB);
-        alternatelySolveTwoQueues(queueA,queueB, 1);
+        alternatelySolveTwoQueuesUntilOneIsSolved(queueA,queueB, 1);
     }
     private void solve(MinPQ<Node> queue, int which){
         Node min = queue.delMin();
         Iterable<Board> boardList = min.board.neighbors();
         for (Board b : boardList) {
-            if (b == min.parent.board){
+            if (min.parent != null && b.equals(min.parent.board)){
                 continue;
             }
-            queue.insert(new Node(b, min.moves + 1, b.manhattan() + min.moves + 1, min));
+            queue.insert(new Node(b, min.moves + 1, b.hamming() + min.moves + 1, min));
         }
         if (queue.min().board.isGoal()) {
             if (which > 0) {
-                this.ifSolved = true;
+                this.whichOneIsSolvable = 1;
                 this.finalNode = queue.delMin();
             } else {
-                this.
+                this.whichOneIsSolvable = -1;
             }
         }
     }
-    private void alternatelySolveTwoQueues(MinPQ<Node> queueA, MinPQ<Node> queueB, int which){
-        if (which > 0) {
-            solve(queueA, which);
-            if (!this.ifSolved) {
-                alternatelySolveTwoQueues(queueA,queueB, which * (-1));
+    private void alternatelySolveTwoQueuesUntilOneIsSolved(MinPQ<Node> queueA, MinPQ<Node> queueB, int which){
+        while (whichOneIsSolvable == 0) {
+            if (which == 1) {
+                solve(queueA, which);
+            }else{
+                solve(queueB, which);
             }
-        } else if (which < 0) {
-            solve(queueB, which);
-            if (!this.ifSolved){
-                alternatelySolveTwoQueues(queueA, queueB, which * (-1));
-            }
+            which *= (-1);
         }
     }
 
     // is the initial board solvable? (see below)
     public boolean isSolvable() {
-        return ifSolved;
+        return whichOneIsSolvable == 1;
     }
 
     // min number of moves to solve initial board; -1 if unsolvable
     public int moves() {
-        if (ifSolved){
+        if (this.isSolvable()){
             return finalNode.moves;
         } else {
             return -1;
@@ -80,7 +81,7 @@ public class Solver {
 
     // sequence of boards in a shortest solution; null if unsolvable
     public Iterable<Board> solution() {
-        if (!ifSolved) {
+        if (whichOneIsSolvable == -1) {
             return null;
         }
         List<Board> boardList = new ArrayList<>();
@@ -92,5 +93,27 @@ public class Solver {
         }
         return boardList;
     }
+    public static void main(String[] args) {
 
+        // create initial board from file
+        In in = new In(args[0]);
+        int n = in.readInt();
+        int[][] tiles = new int[n][n];
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                tiles[i][j] = in.readInt();
+        Board initial = new Board(tiles);
+
+        // solve the puzzle
+        Solver solver = new Solver(initial);
+
+        // print solution to standard output
+        if (!solver.isSolvable())
+            StdOut.println("No solution possible");
+        else {
+            StdOut.println("Minimum number of moves = " + solver.moves());
+            for (Board board : solver.solution())
+                StdOut.println(board);
+        }
+    }
 }

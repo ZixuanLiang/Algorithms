@@ -4,6 +4,9 @@ import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
+
+import static java.lang.Math.abs;
+
 public class Board {
     private final int n;
     private final int[] board;
@@ -17,9 +20,9 @@ public class Board {
         board = new int[n*n];
         for (int i = 0; i < n; i++) {
             for (int j = 0; j < n; j++) {
-                board[toIndex(i, j)] = tiles[i][j];
+                board[toIndex(i+1, j+1)] = tiles[i][j];
                 if (tiles[i][j] == 0) {
-                    indexOfEmpty = toIndex(i, j);
+                    indexOfEmpty = toIndex(i+1, j+1);
                 }
             }
         }
@@ -27,7 +30,8 @@ public class Board {
     }
     private Board(Board another){
         this.n = another.n;
-        this.board = another.board;
+        this.board = new int[n*n];
+        System.arraycopy(another.board,0, this.board, 0, n*n);
         this.indexOfEmpty = another.indexOfEmpty;
     }
     // change (row, col) to the index in the board array
@@ -45,8 +49,8 @@ public class Board {
     public String toString(){
         StringBuilder s = new StringBuilder();
         s.append(n + "\n");
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
+        for (int i = 1; i <= n; i++) {
+            for (int j = 1; j <= n; j++) {
                 s.append(String.format("%2d ", board[toIndex(i, j)]));
             }
             s.append("\n");
@@ -67,9 +71,6 @@ public class Board {
                 counts++;
             }
         }
-        if (board[board.length - 1] != 0) {
-            counts++;
-        }
         return counts;
     }
 
@@ -77,7 +78,7 @@ public class Board {
     public int manhattan(){
         int distances = 0;
         for (int i = 0; i < board.length; i++) {
-            if (board[i] != i + 1) {
+            if (i != indexOfEmpty && board[i] != i + 1) {
                 distances += calculateManhattan(i);
             }
         }
@@ -86,17 +87,13 @@ public class Board {
     // calculate the Manhattan distance of the value in board[index]
     private int calculateManhattan(int index){
         int value = board[index];
-        int rightIndex;
-        if (value == 0) {
-            rightIndex = board.length - 1;
-        } else {
-            rightIndex = value - 1;
-        }
+        int rightIndex = value - 1;
+
         int rightRow = getRow(rightIndex);
         int rightCol = getCol(rightIndex);
         int currRow = getRow(index);
         int currCol = getCol(index);
-        return rightCol - currCol + rightRow - currRow;
+        return abs(rightCol - currCol) + abs(rightRow - currRow);
     }
 
     // is this board the goal board?
@@ -142,6 +139,7 @@ public class Board {
         for (int i : indexArray) {
             Board newBoard = new Board(this);
             newBoard.exchange(i, indexOfEmpty);
+            newBoard.indexOfEmpty = i;
             boardList.add(newBoard);
         }
         return boardList;
@@ -164,9 +162,9 @@ public class Board {
     // generate an integer that is not equal to indexOfEmpty
     private int randomIntGenerator(){
         Random rand = new Random();
-        int randInt = rand.nextInt();
+        int randInt = rand.nextInt(n*n);
         while (randInt == this.indexOfEmpty) {
-            randInt = rand.nextInt(this.n);
+            randInt = rand.nextInt(n*n);
         }
         return randInt;
     }
