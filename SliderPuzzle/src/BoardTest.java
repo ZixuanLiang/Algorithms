@@ -25,6 +25,7 @@ public class BoardTest {
         }
 
     }
+
     private static Board getBoardFromFile(String filepath){
         In in = new In(filepath);
         int n = in.readInt();
@@ -34,4 +35,5 @@ public class BoardTest {
                 tiles[i][j] = in.readInt();
         return new Board(tiles);
     }
+
 }

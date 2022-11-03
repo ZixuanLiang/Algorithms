@@ -1,11 +1,14 @@
-import java.util.*;
 
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
 
-import static java.lang.Math.abs;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
+import java.lang.Math;
 
 public class Board {
     private final int n;
@@ -93,7 +96,7 @@ public class Board {
         int rightCol = getCol(rightIndex);
         int currRow = getRow(index);
         int currCol = getCol(index);
-        return abs(rightCol - currCol) + abs(rightRow - currRow);
+        return Math.abs(rightCol - currCol) + Math.abs(rightRow - currRow);
     }
 
     // is this board the goal board?
@@ -107,7 +110,15 @@ public class Board {
 
     // does this board equal y?
     public boolean equals(Object y){
+        if (y == null) {
+            return false;
+        } else if (this.getClass() != y.getClass()) {
+            return false;
+        }
         Board other = (Board) y;
+        if (this.n != other.n) {
+            return false;
+        }
         for (int i = 0; i < board.length; i++) {
             if (board[i] != other.board[i]) {
                 return false;
@@ -144,29 +155,24 @@ public class Board {
         }
         return boardList;
     }
-    // exchange the board[i] with board[indexOfEmpty]
+    // exchange the board[indexA] with board[indexB]
     private void exchange(int indexA, int indexB){
         int tmp = board[indexA];
         board[indexA] = board[indexB];
         board[indexB] = tmp;
-
     }
 
 
     // a board that is obtained by exchanging any pair of tiles
     public Board twin(){
         Board newBoard = new Board(this);
-        newBoard.exchange(this.randomIntGenerator(), this.randomIntGenerator());
-        return newBoard;
-    }
-    // generate an integer that is not equal to indexOfEmpty
-    private int randomIntGenerator(){
         Random rand = new Random();
-        int randInt = rand.nextInt(n*n);
-        while (randInt == this.indexOfEmpty) {
-            randInt = rand.nextInt(n*n);
+        if (indexOfEmpty > 1) {
+            newBoard.exchange(indexOfEmpty - 1, indexOfEmpty - 2);
+        } else {
+            newBoard.exchange(indexOfEmpty + 1, indexOfEmpty + 2);
         }
-        return randInt;
+        return newBoard;
     }
 
     // unit testing (not graded)

@@ -1,9 +1,11 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.MinPQ;
 import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.Stack;
 
 import java.util.ArrayList;
 import java.util.List;
+
 
 public class Solver {
     private static class Node implements Comparable<Node>{
@@ -27,14 +29,19 @@ public class Solver {
     // -1 means the twin is solvable
     private Node finalNode = null;
     public Solver(Board initial) {
-        // A is the original, B is the twin which is used to know if the A is solvable
-        MinPQ<Node> queueA = new MinPQ<Node>();
-        MinPQ<Node> queueB = new MinPQ<Node>();
-        Node nodeA = new Node(initial, 0, initial.hamming(), null);
-        Node nodeB = new Node(initial.twin(), 0, initial.hamming(), null);
-        queueA.insert(nodeA);
-        queueB.insert(nodeB);
-        alternatelySolveTwoQueuesUntilOneIsSolved(queueA,queueB, 1);
+        if (initial.isGoal()) {
+            whichOneIsSolvable = 1;
+            finalNode = new Node(initial, 0, 0, null);
+        } else {
+            // A is the original, B is the twin which is used to know if the A is solvable
+            MinPQ<Node> queueA = new MinPQ<Node>();
+            MinPQ<Node> queueB = new MinPQ<Node>();
+            Node nodeA = new Node(initial, 0, initial.hamming() + initial.manhattan(), null);
+            Node nodeB = new Node(initial.twin(), 0, initial.hamming() + initial.manhattan(), null);
+            queueA.insert(nodeA);
+            queueB.insert(nodeB);
+            alternatelySolveTwoQueuesUntilOneIsSolved(queueA,queueB, 1);
+        }
     }
     private void solve(MinPQ<Node> queue, int which){
         Node min = queue.delMin();
@@ -43,7 +50,7 @@ public class Solver {
             if (min.parent != null && b.equals(min.parent.board)){
                 continue;
             }
-            queue.insert(new Node(b, min.moves + 1, b.hamming() + min.moves + 1, min));
+            queue.insert(new Node(b, min.moves + 1, b.hamming() + b.manhattan() + min.moves + 1, min));
         }
         if (queue.min().board.isGoal()) {
             if (which > 0) {
@@ -84,14 +91,14 @@ public class Solver {
         if (whichOneIsSolvable == -1) {
             return null;
         }
-        List<Board> boardList = new ArrayList<>();
+        Stack<Board> boardStack = new Stack<>();
         Node n = finalNode;
-        boardList.add(n.board);
+        boardStack.push(n.board);
         while (n.parent != null) {
             n = n.parent;
-            boardList.add(n.board);
+            boardStack.push(n.board);
         }
-        return boardList;
+        return boardStack;
     }
     public static void main(String[] args) {
 
