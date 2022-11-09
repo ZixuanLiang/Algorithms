@@ -1,9 +1,8 @@
 import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
-import org.w3c.dom.css.Rect;
 
-import java.awt.*;
+import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,27 +37,32 @@ public class KdTree {
 
     public void insert(Point2D p) {
         insertToTree(root, p);
-        size++;
     }
     private void insertToTree (Node root, Point2D p) {
+        argumentCheck(p);
         if (size() == 0) {
-            root = new Node(p, 1, new RectHV(0, 0, 1, 1));
+            this.root = new Node(p, 1, new RectHV(0, 0, 1, 1));
+            size++;
             return;
         }
         double leftOrRight = leftOrRight(root, p);
         // base case
-        if (root.leftChild == null && leftOrRight <= 0) {
+        if (root.leftChild == null && leftOrRight <= 0 && !root.point.equals(p)) {
             if (root.indicator > 0) {//the area is left part of the parent area
-                root.leftChild = new Node(p, root.indicator * (-1), new RectHV(root.area.xmin(), root.point.x(), root.area.ymin(), root.area.ymax());
+                root.leftChild = new Node(p, root.indicator * (-1), new RectHV(root.area.xmin(), root.area.ymin(),root.point.x(), root.area.ymax()));
             } else {
-                root.leftChild = new Node(p, root.indicator * (-1), new RectHV(root.area.xmin(), root.area.xmax(), root.area.ymin(), root.point.y());
+                root.leftChild = new Node(p, root.indicator * (-1), new RectHV(root.area.xmin(), root.area.ymin(),root.area.xmax(),root.point.y()));
             }
-        } else if (root.rightChild == null && leftOrRight > 0){
-            if (root.indicator > 0) {//the area is left part of the parent area
-                root.leftChild = new Node(p, root.indicator * (-1), new RectHV(root.point.x(), root.area.xmax(), root.area.ymin(), root.area.ymax());
+            size++;
+            return;
+        } else if (root.rightChild == null && leftOrRight > 0 && !root.point.equals(p)){
+            if (root.indicator > 0) {//the area is right part of the parent area
+                root.rightChild = new Node(p, root.indicator * (-1), new RectHV(root.point.x(), root.area.ymin(),root.area.xmax(), root.area.ymax()));
             } else {
-                root.leftChild = new Node(p, root.indicator * (-1), new RectHV(root.area.xmin(), root.area.xmax(), root.point.y(), root.area.ymin());
+                root.rightChild = new Node(p, root.indicator * (-1), new RectHV(root.area.xmin(), root.point.y(), root.area.xmax(),root.area.ymax()));
             }
+            size++;
+            return;
         }
         // recursive case
         if (leftOrRight > 0) {
@@ -68,7 +72,7 @@ public class KdTree {
         }
     }
     // a helper function helps determine which child node needs to be examined
-    // return a positive value if rightChild needed to be considered; non-negative means leftChild needs to be considered
+    // return a positive value if rightChild needed to be considered; non-positive means leftChild needs to be considered
     private double leftOrRight(Node root, Point2D p) {
         double leftOrRight;
         if (root.indicator == 1) {
@@ -83,6 +87,7 @@ public class KdTree {
         return contains(this.root, p);
     }
     private boolean contains(Node root, Point2D p) {
+        argumentCheck(p);
         if (root == null ) {
             return false;
         } else if (root.point.equals(p)) {
@@ -97,10 +102,19 @@ public class KdTree {
         }
     }
 
+    private void argumentCheck(Object argument) {
+        if (argument == null) {
+            throw new IllegalArgumentException();
+        }
+    }
     public void draw() {
         draw(root);
     }
     private void draw(Node root) {
+        if (root == null) {
+            return;
+        }
+        StdDraw.setPenRadius(0.03);
         StdDraw.setPenColor(Color.black);
         StdDraw.point(root.point.x(), root.point.y());
         StdDraw.setPenRadius(0.01);
@@ -116,6 +130,10 @@ public class KdTree {
     }
 
     public Iterable<Point2D> range(RectHV rect) {
+        argumentCheck(rect);
+        if (root == null) {
+            return null;
+        }
         List<Point2D> list = new ArrayList<>();
         addAllPointsInATree(rect, root, list);
         return list;
@@ -127,16 +145,18 @@ public class KdTree {
         }
         if (root.leftChild != null && rect.intersects(root.leftChild.area)) {
             addAllPointsInATree(rect, root.leftChild, list);
-        } else if (root.rightChild != null && rect.intersects(root.rightChild.area)) {
+        }
+        if (root.rightChild != null && rect.intersects(root.rightChild.area)) {
             addAllPointsInATree(rect, root.rightChild, list);
         }
     }
 
     public Point2D nearest(Point2D p) {
+        argumentCheck(p);
         if (size() == 0) {
             return null;
         } else {
-            return nearestPoint(root, p,  root.point);
+            return nearestPoint(root, p,                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  root.point);
         }
     }
 
