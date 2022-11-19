@@ -2,6 +2,8 @@ import edu.princeton.cs.algs4.BreadthFirstPaths;
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.DirectedCycle;
+
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -16,10 +18,12 @@ public class WordNet {
     private final int[] ifAlreadyReturned;//indicate whether the synset at an index has been returned when iterating,
                                           // the default value is 0, 1 means it has been returned
     private final int size;
-
+    private final SAP sap;
 
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
+        argumentCheck(synsets);
+        argumentCheck(hypernyms);
         synSets = constructSynSets(synsets);
         try {
             size = (int) Files.lines(Paths.get(synsets)).count();
@@ -30,6 +34,25 @@ public class WordNet {
         undirectedWordNet = new Graph(size);
         ifAlreadyReturned = new int[size];
         buildWordNet(hypernyms);
+        rooted_DAG_Check();
+        sap = new SAP(wordNet);
+    }
+    private void rooted_DAG_Check() {
+        //cycle check
+        DirectedCycle cycle = new DirectedCycle(this.wordNet);
+        if (cycle.hasCycle()) {
+            throw new IllegalArgumentException();
+        }
+        //root check
+        int rootCounter = 0;
+        for (int i = 0; i < size; i++) {
+            if (wordNet.outdegree(i) == 0) {
+                rootCounter++;
+            }
+        }
+        if (rootCounter != 0) {
+            throw new IllegalArgumentException();
+        }
     }
     private String[] constructSynSets (String filename){
         String[] synSets = new String[size];
@@ -57,6 +80,7 @@ public class WordNet {
 
     // is the word a WordNet noun?
     public boolean isNoun(String word) {
+        argumentCheck(word);
         if (binarySearch(word) < 0) {
             return false;
         } else {
@@ -80,41 +104,28 @@ public class WordNet {
 
     // distance between nounA and nounB (defined below)
     public int distance(String nounA, String nounB) {
-        return count(pathTo(nounA, nounB)) - 1;
-    }
-    private Iterable<Integer> pathTo(String nounA, String nounB) {
-        BreadthFirstPaths paths = new BreadthFirstPaths(undirectedWordNet, binarySearch(nounA));
-        return paths.pathTo(binarySearch(nounB));
-    }
-    private int count(Iterable<Integer> path) {
-        int counter = 0;
-        for (int i : path) {
-            counter++;
+        if (!isNoun(nounA) || !isNoun(nounB)) {
+            throw new IllegalArgumentException();
         }
-        return counter;
+        return sap.length(binarySearch(nounA), binarySearch(nounB));
     }
+
     // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
     // in a shortest ancestral path (defined below)
     public String sap(String nounA, String nounB) {
-        Iterable<Integer> pathFromAToB = pathTo(nounA, nounB);
-        Iterator<Integer> iterator = pathFromAToB.iterator();
-        int v = iterator.next();
-        while (true) {
-            int next = iterator.next();
-            int counter = 0;
-            int numOfAdj = count(wordNet.adj(v));
-            for (int w : wordNet.adj(v)) {
-                if (w == next) {
-                    break;
-                } else if (counter == numOfAdj - 1) {
-                    return synSets[v];
-                }
-                counter++;
-            }
-            v = next;
+        if (!isNoun(nounA) || !isNoun(nounB)) {
+            throw new IllegalArgumentException();
+        }
+        return synSets[sap.ancestor(binarySearch(nounA), binarySearch(nounB))];
+    }
+    private void argumentCheck(Object args) {
+        if (args == null) {
+            throw new IllegalArgumentException();
         }
     }
 
     // do unit testing of this class
-    public static void main(String[] args)
+    public static void main(String[] args) {
+        
+    }
 }
