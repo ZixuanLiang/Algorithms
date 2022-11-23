@@ -1,22 +1,16 @@
-import edu.princeton.cs.algs4.BreadthFirstPaths;
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.Graph;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.DirectedCycle;
-
-
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 public class WordNet {
     private final Digraph wordNet;
     private final Graph undirectedWordNet;
-    private final String[] synSets;
-    private final int[] ifAlreadyReturned;//indicate whether the synset at an index has been returned when iterating,
-                                          // the default value is 0, 1 means it has been returned
+    private final List<String> synSets; // list of each lines
+    private final HashMap<String,Integer> nounMapToIndex; // map each word to its index
     private final int size;
     private final SAP sap;
 
@@ -24,15 +18,12 @@ public class WordNet {
     public WordNet(String synsets, String hypernyms) {
         argumentCheck(synsets);
         argumentCheck(hypernyms);
-        synSets = constructSynSets(synsets);
-        try {
-            size = (int) Files.lines(Paths.get(synsets)).count();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        synSets = new ArrayList<>();
+        nounMapToIndex = new HashMap<>();
+        constructSynSets(synsets);
+        size = synSets.size();
         wordNet = new Digraph(size);
         undirectedWordNet = new Graph(size);
-        ifAlreadyReturned = new int[size];
         buildWordNet(hypernyms);
         rooted_DAG_Check();
         sap = new SAP(wordNet);
@@ -50,24 +41,32 @@ public class WordNet {
                 rootCounter++;
             }
         }
-        if (rootCounter != 0) {
+        if (rootCounter != 1) {
             throw new IllegalArgumentException();
         }
     }
-    private String[] constructSynSets (String filename){
-        String[] synSets = new String[size];
+    private void constructSynSets (String filename){
         In in = new In(filename);
-        for (int i = 0; i < size; i++) {
-            synSets[i] = in.readLine().split(",")[1];
+        String secondString;
+        String[] synonyms, line;
+        int index;
+        while(!in.isEmpty()) {
+            line = in.readLine().split(",");
+            index = Integer.parseInt(line[0]);
+            secondString = line[1];
+            synonyms = line[1].split(" ");
+            synSets.add(secondString);
+            for (String s : synonyms) {
+                nounMapToIndex.put(s, index);
+            }
         }
-        return synSets;
     }
     private void buildWordNet (String hypernyms) {
         In in = new In(hypernyms);
         String[] w;
         for (int i = 0; i < size; i++) {
             w = in.readLine().split(",");
-            for (int j = 0; j < w.length; j++) {
+            for (int j = 1; j < w.length; j++) {
                 wordNet.addEdge(i,Integer.parseInt(w[j]));
                 undirectedWordNet.addEdge(i,Integer.parseInt(w[j]));
             }
@@ -75,31 +74,25 @@ public class WordNet {
     }
     // returns all WordNet nouns
     public Iterable<String> nouns() {
-        return List.of(synSets);
+        return nounMapToIndex.keySet();
     }
 
     // is the word a WordNet noun?
     public boolean isNoun(String word) {
         argumentCheck(word);
-        if (binarySearch(word) < 0) {
+        if (getIndexOfNoun(word) < 0) {
             return false;
         } else {
             return true;
         }
     }
-    private int binarySearch(String word) {
-        int low = 0, hi = size - 1;
-        while (low <= hi) {
-            int mid = low + (hi - low) / 2;
-            if (word.compareTo(synSets[mid]) < 0) {
-                hi = mid - 1;
-            } else if (word.compareTo(synSets[mid]) > 0) {
-                low = mid + 1;
-            } else {
-                return mid;
-            }
+    private int getIndexOfNoun(String word) {
+        Object index = nounMapToIndex.get(word);
+        if (index == null) {
+            return -1;
+        } else {
+            return (int) index;
         }
-        return -1;
     }
 
     // distance between nounA and nounB (defined below)
@@ -107,7 +100,7 @@ public class WordNet {
         if (!isNoun(nounA) || !isNoun(nounB)) {
             throw new IllegalArgumentException();
         }
-        return sap.length(binarySearch(nounA), binarySearch(nounB));
+        return sap.length(getIndexOfNoun(nounA), getIndexOfNoun(nounB));
     }
 
     // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
@@ -116,7 +109,7 @@ public class WordNet {
         if (!isNoun(nounA) || !isNoun(nounB)) {
             throw new IllegalArgumentException();
         }
-        return synSets[sap.ancestor(binarySearch(nounA), binarySearch(nounB))];
+        return synSets.get(sap.ancestor(getIndexOfNoun(nounA), getIndexOfNoun(nounB)));
     }
     private void argumentCheck(Object args) {
         if (args == null) {
@@ -126,6 +119,6 @@ public class WordNet {
 
     // do unit testing of this class
     public static void main(String[] args) {
-        
+        WordNet wordnet = new WordNet(args[0], args[1]);
     }
 }

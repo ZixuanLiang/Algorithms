@@ -1,33 +1,50 @@
-import edu.princeton.cs.algs4.*;
+import edu.princeton.cs.algs4.BreadthFirstDirectedPaths;
+import edu.princeton.cs.algs4.Digraph;
+import edu.princeton.cs.algs4.Graph;
+import edu.princeton.cs.algs4.In;
+import edu.princeton.cs.algs4.StdIn;
+import edu.princeton.cs.algs4.StdOut;
+
 
 import java.util.Iterator;
 
 public class SAP {
     private final Digraph wordNet;
-    private final Graph unDirectedGraph;
+
     private int ancestor;
-//    private final DepthFirstOrder topological;
+
     // constructor takes a digraph (not necessarily a DAG)
     public SAP(Digraph G) {
         wordNet = G;
-        unDirectedGraph = constructUnDirected(G);
         ancestor = Integer.MAX_VALUE;
-//        topological = new DepthFirstOrder(G);
     }
-    private Graph constructUnDirected(Digraph G) {
-        int size = G.V();
-        Graph graph = new Graph(size);
+
+    // length of the shortest ancestral path between v and w; -1 if no such path
+    public int length(int v, int w) {
+        BreadthFirstDirectedPaths fromV = new BreadthFirstDirectedPaths(wordNet, v);
+        BreadthFirstDirectedPaths fromW = new BreadthFirstDirectedPaths(wordNet, w);
+        int size = wordNet.V();
+        int minDistance = size + 1;
+        int distance;
         for (int i = 0; i < size; i++) {
-            Iterable<Integer> adj = G.adj(i);
-            for (int j : adj) {
-                graph.addEdge(i,j);
+            if (fromV.hasPathTo(i) && fromW.hasPathTo(i)) {
+                distance = fromV.distTo(i) + fromW.distTo(i);
+                if (distance < minDistance) {
+                    ancestor = i;
+                    minDistance = distance;
+                }
             }
         }
-        return graph;
+        return minDistance == (size + 1) ? -1 : minDistance;
     }
-    private Iterable<Integer> pathTo(int v, int w) {
-        BreadthFirstPaths paths = new BreadthFirstPaths(unDirectedGraph, v);
-        return paths.pathTo(w);
+
+    // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
+
+    public int ancestor(int v, int w) {
+        if (length(v, w) == -1) {
+            return -1;
+        }
+        return ancestor;
     }
     private int count(Iterable<Integer> path) {
         if (path == null) {
@@ -39,37 +56,11 @@ public class SAP {
         }
         return counter;
     }
-    // length of the shortest ancestral path between v and w; -1 if no such path
-    public int length(int v, int w) {
-        return count(pathTo(v,w));
-    }
-
-    // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
-    public int ancestor(int v, int w) {
-        if (pathTo(v, w) == null) {
-            return -1;
-        }
-        Iterable<Integer> pathFromAToB = pathTo(v, w);
-        Iterator<Integer> iterator = pathFromAToB.iterator();
-        int curr = iterator.next();
-        while (true) {
-            int next = iterator.next();
-            int counter = 0;
-            int numOfAdj = count(wordNet.adj(curr));
-            for (int i : wordNet.adj(v)) {
-                if (i == next) {
-                    break;
-                } else if (counter == numOfAdj - 1) {
-                    return curr;
-                }
-                counter++;
-            }
-            curr = next;
-        }
-    }
-
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
     public int length(Iterable<Integer> v, Iterable<Integer> w) {
+        if (count(v) == 0 || count(w) == 0) {
+            throw new IllegalArgumentException();
+        }
         BreadthFirstDirectedPaths vPath = new BreadthFirstDirectedPaths(wordNet, v);
         BreadthFirstDirectedPaths wPath = new BreadthFirstDirectedPaths(wordNet, w);
         int size = wordNet.V(), shortestPathSoFar = size + 1;
@@ -95,6 +86,15 @@ public class SAP {
 
     // do unit testing of this class
     public static void main(String[] args) {
-
+        In in = new In(args[0]);
+        Digraph G = new Digraph(in);
+        SAP sap = new SAP(G);
+        while (!StdIn.isEmpty()) {
+            int v = StdIn.readInt();
+            int w = StdIn.readInt();
+            int length   = sap.length(v, w);
+            int ancestor = sap.ancestor(v, w);
+            StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
+        }
     }
 }
