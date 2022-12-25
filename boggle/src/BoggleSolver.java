@@ -1,7 +1,11 @@
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 
 public class BoggleSolver
 {
@@ -36,8 +40,16 @@ public class BoggleSolver
             marked = new ArrayList<>();
             for (int i = 0; i < boardArray.length; i++) {
                 marked.add(i);
-                dfs(i, String.valueOf(boardArray[i]));
+                dfs(i, getCharFromIndex(i));
                 marked.remove((Integer)i);
+            }
+        }
+        private String getCharFromIndex(int index) {
+            String s = String.valueOf(boardArray[index]);
+            if (s.equals("Q")) {
+                return "QU";
+            } else {
+                return s;
             }
         }
         private char[] constructBoardArray(BoggleBoard board)
@@ -61,9 +73,9 @@ public class BoggleSolver
             }
             for (int i : adj(indexBoard)) {
                 if (!marked.contains(i)) {
-                    if (trie.isPath(s + boardArray[i])){
+                    if (trie.isPath(s + getCharFromIndex(i))){
                         marked.add(i);
-                        dfs(i, s + boardArray[i]);
+                        dfs(i, s + getCharFromIndex(i));
                         marked.remove((Integer)i);
                     }
                 }
@@ -96,7 +108,8 @@ public class BoggleSolver
     public int scoreOf(String word) {
         if (!trie.contains(word)) return 0;
         int l = word.length();
-        if (l <= 4) return 1;
+        if(l<3) return 0;
+        else if (l <= 4) return 1;
         else if (l == 5) return 2;
         else if (l == 6) return 3;
         else if (l == 7) return 5;
